@@ -8,14 +8,11 @@ actor NetworkService: ServiceProtocol {
     // MARK: - Properties
     private var urlSession: URLSession = .shared
     
-    // 使用NSLock来处理线程安全
-    private static let lock = NSLock()
+    // 使用全局变量来存储状态
     private static var _isReady = false
     
     nonisolated var isReady: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return Self._isReady
+        Self._isReady
     }
     
     // MARK: - ServiceProtocol
@@ -27,10 +24,7 @@ actor NetworkService: ServiceProtocol {
         configuration.waitsForConnectivity = true
         
         urlSession = URLSession(configuration: configuration)
-        
-        Self.lock.lock()
         Self._isReady = true
-        Self.lock.unlock()
     }
     
     // MARK: - Public Methods
