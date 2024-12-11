@@ -10,11 +10,14 @@ actor StorageService: ServiceProtocol {
     private let fileManager = FileManager.default
     private var cachePath: URL?
     
-    // 使用全局变量来存储状态
+    // 使用NSLock来处理线程安全
+    private static let lock = NSLock()
     private static var _isReady = false
     
     nonisolated var isReady: Bool {
-        Self._isReady
+        lock.lock()
+        defer { lock.unlock() }
+        return Self._isReady
     }
     
     // MARK: - ServiceProtocol
@@ -28,7 +31,10 @@ actor StorageService: ServiceProtocol {
             }
             
             cachePath = appCache
+            
+            Self.lock.lock()
             Self._isReady = true
+            Self.lock.unlock()
             
             // 清理过期缓存
             await cleanExpiredCache()
