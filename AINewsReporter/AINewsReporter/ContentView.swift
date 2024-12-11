@@ -15,7 +15,12 @@ struct ContentView: View {
                     .font(.title)
                     .padding()
                 
-                Text("我们即将开始精彩的旅程")
+                Text("让我们一起探索 AI 新闻的魅力")
+                    .foregroundColor(.blue)
+                    .padding()
+                
+                Text("Version 1.0")
+                    .font(.caption)
                     .foregroundColor(.gray)
             }
             .navigationTitle("AI 新闻播报")
