@@ -53,10 +53,17 @@ AINewsReporter/
 - [x] AppConfig: 应用配置（环境设置、功能开关）
 - [x] Logger: 日志工具（支持多级别日志和网络日志）
 
-### 5. 待完成任务
+### 5. 核心服务迁移 (🚧 进行中)
 
-- [ ] 网络服务迁移 (NetworkService, Endpoint)
-- [ ] 存储服务迁移 (StorageService)
+- [x] 网络服务
+  - [x] Endpoint: API端点定义
+  - [x] NetworkService: 网络请求服务
+  - [x] 错误处理
+  - [x] 日志集成
+- [ ] 存储服务 (StorageService)
+
+### 6. 待完成任务
+
 - [ ] 新闻功能模块迁移
   - [ ] 模型层
   - [ ] ViewModel层
