@@ -47,11 +47,11 @@ AINewsReporter/
 - [x] ErrorView: 错误状态视图
 - [x] EmptyStateView: 空状态视图
 
-### 4. 工具类迁移 (🚧 进行中)
+### 4. 工具类迁移 (✅ 完成)
 
 - [x] Constants: 全局常量定义
 - [x] AppConfig: 应用配置（环境设置、功能开关）
-- [ ] Logger: 日志工具
+- [x] Logger: 日志工具（支持多级别日志和网络日志）
 
 ### 5. 待完成任务
 
