@@ -50,7 +50,7 @@ AINewsReporter/
 ### 4. 工具类迁移 (🚧 进行中)
 
 - [x] Constants: 全局常量定义
-- [ ] AppConfig: 应用配置
+- [x] AppConfig: 应用配置（环境设置、功能开关）
 - [ ] Logger: 日志工具
 
 ### 5. 待完成任务
