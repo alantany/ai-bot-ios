@@ -1,0 +1,10 @@
+{
+  "name": "getNews",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "xml2js": "^0.6.2"
+  }
+}

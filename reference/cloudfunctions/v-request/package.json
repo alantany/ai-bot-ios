@@ -1,0 +1,11 @@
+{
+  "name": "v-request",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "request": "^2.88.2",
+    "querystring": "^0.2.1"
+  }
+} 

@@ -1,0 +1,66 @@
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx;
+  background: linear-gradient(to bottom, #e6f3ff, #ffffff);
+}
+
+.avatar {
+  width: 300rpx;
+  height: 300rpx;
+  background: #4299e1;
+  border-radius: 50%;
+  position: relative;
+  margin-bottom: 40rpx;
+}
+
+.eyes {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.eye {
+  width: 40rpx;
+  height: 40rpx;
+  background: #000;
+  border-radius: 50%;
+}
+
+.mouth {
+  position: absolute;
+  bottom: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100rpx;
+  height: 30rpx;
+  background: #fff;
+  border-radius: 15rpx;
+}
+
+.news-box {
+  width: 90%;
+  min-height: 200rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 40rpx 0;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+}
+
+.play-btn {
+  width: 200rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  background: #4299e1;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+} 

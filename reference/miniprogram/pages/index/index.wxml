@@ -1,0 +1,58 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 机器人头像 -->
+  <view class="robot-container">
+    <view class="robot">
+      <view class="antenna"></view>
+      <view class="head">
+        <view class="eyes">
+          <view class="eye left">
+            <view class="pupil"></view>
+          </view>
+          <view class="eye right">
+            <view class="pupil"></view>
+          </view>
+        </view>
+        <view class="mouth" animation="{{mouthAnimation}}">
+          <view class="mouth-line"></view>
+        </view>
+      </view>
+    </view>
+    <!-- 阴影效果 -->
+    <view class="robot-shadow"></view>
+  </view>
+
+  <!-- 新闻内容卡片 -->
+  <view class="news-card">
+    <text class="news-content">{{displayedNews || '请选择新闻类型开始收听...'}}</text>
+  </view>
+
+  <!-- 控制按钮组 -->
+  <view class="control-group">
+    <button class="control-btn next-btn" 
+            bindtap="playNextNews">
+      下一条
+    </button>
+    <button class="control-btn play-btn {{isContinuousPlay ? 'playing' : ''}}" 
+            bindtap="toggleContinuousPlay">
+      {{isContinuousPlay ? '停止播放' : '持续播放'}}
+    </button>
+  </view>
+
+  <!-- 新闻分类按钮 -->
+  <view class="category-tabs">
+    <button class="tab-btn {{newsType === 'domestic' ? 'active' : ''}}" 
+            bindtap="playDomesticNews">
+      国内新闻
+    </button>
+    <button class="tab-btn {{newsType === 'international' ? 'active' : ''}}" 
+            bindtap="playInternationalNews">
+      国际新闻
+    </button>
+  </view>
+
+  <!-- 开发者信息 -->
+  <view class="developer-info">
+    开发者：谭怀远
+  </view>
+</view>
