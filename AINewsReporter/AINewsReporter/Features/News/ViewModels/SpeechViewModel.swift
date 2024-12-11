@@ -36,7 +36,13 @@ final class SpeechViewModel: ViewModelProtocol {
     }
     
     deinit {
-        cleanup()
+        // 在deinit中只进行非actor隔离的清理
+        cleanupNonIsolated()
+        
+        // 对于需要在主线程执行的清理，使用Task
+        Task { @MainActor in
+            await cleanupIsolated()
+        }
     }
     
     private func setupAudioSession() {
@@ -151,9 +157,20 @@ final class SpeechViewModel: ViewModelProtocol {
     }
     
     private func cleanup() {
-        stopProgressTracking()
+        cleanupNonIsolated()
+        cleanupIsolated()
+    }
+    
+    // 非actor隔离的清理工作
+    private nonisolated func cleanupNonIsolated() {
+        progressTimer?.invalidate()
+        progressTimer = nil
         audioPlayer?.stop()
         audioPlayer = nil
+    }
+    
+    // actor隔离的清理工作
+    private func cleanupIsolated() {
         state.isPlaying = false
         state.progress = 0
     }
