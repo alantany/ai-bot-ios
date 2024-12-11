@@ -47,12 +47,17 @@ AINewsReporter/
 - [x] ErrorView: 错误状态视图
 - [x] EmptyStateView: 空状态视图
 
-### 4. 待完成任务
+### 4. 工具类迁移 (🚧 进行中)
 
-- [ ] 工具类迁移 (AppConfig, Constants, Logger)
+- [x] Constants: 全局常量定义
+- [ ] AppConfig: 应用配置
+- [ ] Logger: 日志工具
+
+### 5. 待完成任务
+
 - [ ] 网络服务迁移 (NetworkService, Endpoint)
 - [ ] 存储服务迁移 (StorageService)
-- [ ] 新功能模块迁移
+- [ ] 新闻功能模块迁移
   - [ ] 模型层
   - [ ] ViewModel层
   - [ ] 视图层
