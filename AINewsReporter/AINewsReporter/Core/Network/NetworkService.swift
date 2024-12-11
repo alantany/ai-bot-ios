@@ -7,7 +7,13 @@ actor NetworkService: ServiceProtocol {
     
     // MARK: - Properties
     private var urlSession: URLSession = .shared
-    private(set) var isReady: Bool = false
+    private var _isReady: Bool = false
+    
+    nonisolated var isReady: Bool {
+        get {
+            _isReady
+        }
+    }
     
     // MARK: - ServiceProtocol
     func initialize() async throws {
@@ -18,7 +24,7 @@ actor NetworkService: ServiceProtocol {
         configuration.waitsForConnectivity = true
         
         urlSession = URLSession(configuration: configuration)
-        isReady = true
+        _isReady = true
     }
     
     // MARK: - Public Methods
