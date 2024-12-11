@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 protocol ViewModelProtocol: ObservableObject {
     associatedtype State
     
