@@ -26,13 +26,27 @@ final class NewsListViewModel: ViewModelProtocol {
          storageService: StorageService = .shared) {
         self.networkService = networkService
         self.storageService = storageService
-        
+        setupSearchDebounce()
+    }
+    
+    static func create() async throws -> NewsListViewModel {
+        let viewModel = NewsListViewModel()
+        await viewModel.initialize()
+        return viewModel
+    }
+    
+    private func initialize() async {
         // 加载缓存的分类选择
-        if let savedCategory = try? storageService.getValue(forKey: "selectedCategory", type: News.Category.self) {
+        if let savedCategory = try? await storageService.getValue(forKey: "selectedCategory", type: News.Category.self) {
             state.selectedCategory = savedCategory
         }
         
-        setupSearchDebounce()
+        // 加载缓存的新闻数据
+        let cacheKey = "news_cache_\(state.selectedCategory.rawValue)"
+        if let cachedData = try? await storageService.getCachedData(forKey: cacheKey),
+           let cachedNews = try? JSONDecoder().decode([News].self, from: cachedData) {
+            state.news = cachedNews
+        }
     }
     
     // MARK: - Public Methods
@@ -55,7 +69,7 @@ final class NewsListViewModel: ViewModelProtocol {
     func selectCategory(_ category: News.Category) async {
         guard category != state.selectedCategory else { return }
         state.selectedCategory = category
-        try? storageService.setValue(category, forKey: "selectedCategory")
+        try? await storageService.setValue(category, forKey: "selectedCategory")
         await refreshNews()
     }
     

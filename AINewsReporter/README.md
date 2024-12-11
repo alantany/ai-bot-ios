@@ -73,7 +73,7 @@ AINewsReporter/
   - [x] NewsResponse: 新闻列表响应模型
   - [x] AIResponse: AI处理响应模型
 - [ ] ViewModel层
-  - [ ] NewsListViewModel
+  - [x] NewsListViewModel: 新闻列表（加载、刷新、分页、搜索、分类）
   - [ ] NewsDetailViewModel
   - [ ] SpeechViewModel
 - [ ] 视图层
