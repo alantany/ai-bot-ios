@@ -5,7 +5,7 @@ import Combine
 final class NewsDetailViewModel: ViewModelProtocol {
     // MARK: - State
     struct State {
-        let news: News
+        var news: News
         var aiResponse: AIResponse?
         var isGeneratingAISummary = false
         var isSpeaking = false
@@ -43,11 +43,12 @@ final class NewsDetailViewModel: ViewModelProtocol {
             state.isBookmarked = bookmarks.contains(state.news.id)
         }
         
-        // 检查是否有缓存的AI摘要
+        // 检查是否有缓存���AI摘要
         let cacheKey = "ai_summary_\(state.news.id)"
         if let cachedData = try? await storageService.getCachedData(forKey: cacheKey),
            let aiResponse = try? JSONDecoder().decode(AIResponse.self, from: cachedData) {
             state.aiResponse = aiResponse
+            state.news.aiSummary = aiResponse.summary
         }
     }
     
@@ -63,7 +64,11 @@ final class NewsDetailViewModel: ViewModelProtocol {
             
             // 更新状态
             state.aiResponse = aiResponse
-            state.news.aiSummary = aiResponse.summary
+            
+            // 创建新的News实例来更新aiSummary
+            var updatedNews = state.news
+            updatedNews.aiSummary = aiResponse.summary
+            state.news = updatedNews
             
             // 缓存AI摘要
             let cacheKey = "ai_summary_\(state.news.id)"
