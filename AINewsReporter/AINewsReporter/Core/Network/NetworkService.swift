@@ -1,5 +1,4 @@
 import Foundation
-import Atomics
 
 actor NetworkService: ServiceProtocol {
     // MARK: - Singleton
@@ -9,11 +8,11 @@ actor NetworkService: ServiceProtocol {
     // MARK: - Properties
     private var urlSession: URLSession = .shared
     
-    // 使用原子属性来存储状态
-    private let _isReady = ManagedAtomic<Bool>(false)
+    // 使用全局变量来存储状态
+    private static var _isReady = false
     
     nonisolated var isReady: Bool {
-        _isReady.load(ordering: .acquiring)
+        Self._isReady
     }
     
     // MARK: - ServiceProtocol
@@ -25,7 +24,7 @@ actor NetworkService: ServiceProtocol {
         configuration.waitsForConnectivity = true
         
         urlSession = URLSession(configuration: configuration)
-        _isReady.store(true, ordering: .releasing)
+        Self._isReady = true
     }
     
     // MARK: - Public Methods

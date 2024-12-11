@@ -1,5 +1,4 @@
 import Foundation
-import Atomics
 
 actor StorageService: ServiceProtocol {
     // MARK: - Singleton
@@ -11,11 +10,11 @@ actor StorageService: ServiceProtocol {
     private let fileManager = FileManager.default
     private var cachePath: URL?
     
-    // 使用原子属性来存储状态
-    private let _isReady = ManagedAtomic<Bool>(false)
+    // 使用全局变量来存储状态
+    private static var _isReady = false
     
     nonisolated var isReady: Bool {
-        _isReady.load(ordering: .acquiring)
+        Self._isReady
     }
     
     // MARK: - ServiceProtocol
@@ -29,7 +28,7 @@ actor StorageService: ServiceProtocol {
             }
             
             cachePath = appCache
-            _isReady.store(true, ordering: .releasing)
+            Self._isReady = true
             
             // 清理过期缓存
             await cleanExpiredCache()
