@@ -66,12 +66,23 @@ AINewsReporter/
   - [x] 缓存清理策略
   - [x] 错误处理
 
-### 6. 待完成任务
+### 6. 新闻功能模块迁移 (🚧 进行中)
 
-- [ ] 新闻功能模块迁移
-  - [ ] 模型层
-  - [ ] ViewModel层
-  - [ ] 视图层
+- [x] 模型层
+  - [x] News: 新闻数据模型
+  - [x] NewsResponse: 新闻列表响应模型
+  - [x] AIResponse: AI处理响应模型
+- [ ] ViewModel层
+  - [ ] NewsListViewModel
+  - [ ] NewsDetailViewModel
+  - [ ] SpeechViewModel
+- [ ] 视图层
+  - [ ] NewsListView
+  - [ ] NewsDetailView
+  - [ ] NewsCardView
+
+### 7. 待完成任务
+
 - [ ] 单元测试迁移
 - [ ] CI/CD 配置
 
