@@ -7,9 +7,9 @@ actor NetworkService: ServiceProtocol {
     
     // MARK: - Properties
     private var urlSession: URLSession = .shared
-    @unchecked private var _isReady: Bool = false
+    private var _isReady: Bool = false
     
-    nonisolated var isReady: Bool {
+    nonisolated(unsafe) var isReady: Bool {
         _isReady
     }
     

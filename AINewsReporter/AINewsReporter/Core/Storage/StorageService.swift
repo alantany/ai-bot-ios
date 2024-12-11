@@ -9,9 +9,9 @@ actor StorageService: ServiceProtocol {
     private let userDefaults = UserDefaults.standard
     private let fileManager = FileManager.default
     private var cachePath: URL?
-    @unchecked private var _isReady: Bool = false
+    private var _isReady: Bool = false
     
-    nonisolated var isReady: Bool {
+    nonisolated(unsafe) var isReady: Bool {
         _isReady
     }
     
