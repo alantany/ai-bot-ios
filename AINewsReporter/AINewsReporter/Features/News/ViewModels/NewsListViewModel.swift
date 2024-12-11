@@ -29,7 +29,7 @@ final class NewsListViewModel: ViewModelProtocol {
         setupSearchDebounce()
     }
     
-    static func create() async throws -> NewsListViewModel {
+    static func create() async -> NewsListViewModel {
         let viewModel = NewsListViewModel()
         await viewModel.initialize()
         return viewModel
