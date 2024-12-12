@@ -34,7 +34,9 @@ actor NetworkService: ServiceProtocol {
         }
         
         do {
-            let request = try endpoint.asURLRequest()
+            guard let request = endpoint.asURLRequest() else {
+                throw NetworkError.invalidRequest
+            }
             Logger.shared.logNetworkRequest(request)
             
             let (data, response) = try await urlSession.data(for: request)
@@ -75,7 +77,9 @@ actor NetworkService: ServiceProtocol {
         }
         
         do {
-            let request = try endpoint.asURLRequest()
+            guard let request = endpoint.asURLRequest() else {
+                throw NetworkError.invalidRequest
+            }
             Logger.shared.logNetworkRequest(request)
             
             let (data, response) = try await urlSession.data(for: request)
