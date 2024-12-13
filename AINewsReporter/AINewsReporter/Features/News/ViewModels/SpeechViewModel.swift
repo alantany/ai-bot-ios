@@ -60,7 +60,7 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
             }
             
             synthesizer?.addSynthesisCanceledEventHandler { [weak self] synthesizer, eventArgs in
-                print("语音合成取消：\(eventArgs)")
+                print("语音合成取消：\(String(describing: eventArgs))")
                 Task { @MainActor in
                     self?.synthesisCompleted = true
                     self?.state.isPlaying = false
@@ -95,6 +95,41 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
         }
     }
     
+    private func escapeXMLCharacters(_ text: String) -> String {
+        return text
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&apos;")
+    }
+    
+    private func formatTextWithBreaks(_ text: String) -> String {
+        // 清理文本，移除多余的空格和省略号
+        let cleanText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "...", with: "")
+            .replacingOccurrences(of: "。。。", with: "")
+        
+        return cleanText + "。"
+    }
+    
+    private func addSSMLTags(_ text: String) -> String {
+        let escapedText = escapeXMLCharacters(text)
+        let formattedText = formatTextWithBreaks(escapedText)
+        
+        // 使用SSML添加适当的语气和停顿
+        return """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="zh-CN">
+            <voice name="zh-CN-XiaoxiaoNeural">
+                <prosody rate="0.95" pitch="0%">
+                    \(formattedText)
+                </prosody>
+            </voice>
+        </speak>
+        """
+    }
+    
     func play(_ text: String) async {
         guard !state.isTransitioning else { return }
         
@@ -106,10 +141,14 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
         // 确保之前的播放已经停止
         await stop()
         
-        print("========== 开始播放新闻 ==========")
-        print("文本长度：\(text.count)")
-        print("文本内容：\(text)")
-        print("================================")
+        // 打印日志时解码 Unicode 转义序列
+        print("""
+        ========== 开始播放新闻 ==========
+        文本长度：\(text.count)
+        文本内容：
+        \(text.removingPercentEncoding ?? text)
+        ================================
+        """)
         
         // 使用 Azure 语音服务播放
         do {
@@ -123,8 +162,11 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
             
             currentTask = Task {
                 do {
-                    let result = try synthesizer.speakText(text)
-                    print("调用speakText返回：\(result)")
+                    // 使用SSML格式的文本
+                    let ssmlText = addSSMLTags(text)
+                    print("SSML文本：\n\(ssmlText)")
+                    let result = try synthesizer.speakSsml(ssmlText)
+                    print("调用speakSsml返回：\(String(describing: result))")
                     
                     // 等待合成完成
                     while !synthesisCompleted && !Task.isCancelled {
@@ -142,7 +184,7 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
                             self.error = error
                             state.isPlaying = false
                             isLoading = false
-                            print("播放出错：\(error)")
+                            print("播放出错：\(error.localizedDescription)")
                         }
                     }
                 }
@@ -154,7 +196,7 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
             self.error = error
             state.isPlaying = false
             isLoading = false
-            print("初始化出错：\(error)")
+            print("初始化出错：\(error.localizedDescription)")
         }
     }
     
