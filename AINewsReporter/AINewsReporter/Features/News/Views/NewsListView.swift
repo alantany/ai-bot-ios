@@ -8,34 +8,31 @@ struct RobotView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // 天线和电波
-            ZStack {
-                // 天线和顶部圆球
-                VStack(spacing: 0) {
-                    ZStack {
-                        // 电波动画 (三个圆圈)
-                        if isPlaying {
-                            ForEach(0..<3) { index in
-                                Circle()
-                                    .stroke(Color.accentColor.opacity(0.6 - Double(index) * 0.2), lineWidth: 3)
-                                    .frame(width: 30 + CGFloat(index) * 20)
-                                    .scaleEffect(waveScale)
-                            }
+            // 天线、圆球和电波
+            VStack(spacing: -8) { // 增加负间距，让圆球和天线更紧密
+                ZStack {
+                    // 电波动画 (三个圆圈)
+                    if isPlaying {
+                        ForEach(0..<3) { index in
+                            Circle()
+                                .stroke(Color.accentColor.opacity(0.6 - Double(index) * 0.2), lineWidth: 3)
+                                .frame(width: 30 + CGFloat(index) * 20)
+                                .scaleEffect(waveScale)
                         }
-                        
-                        // 顶部圆球
-                        Circle()
-                            .fill(Color.primary)
-                            .frame(width: 8, height: 8)
                     }
                     
-                    // 天线
-                    Rectangle()
-                        .frame(width: 3, height: 40)
-                        .foregroundStyle(.primary)
+                    // 顶部圆球
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.8))
+                        .frame(width: 16, height: 16)
                 }
+                .frame(height: 60)
+                
+                // 天线
+                Rectangle()
+                    .frame(width: 3, height: 40)
+                    .foregroundStyle(.primary)
             }
-            .frame(height: 100) // 固定高度，防止动画时位置偏移
             
             // 机器人头部（简单线条风格）
             ZStack {
@@ -47,14 +44,27 @@ struct RobotView: View {
                     .rotationEffect(.degrees(headRotation))
                 
                 VStack(spacing: 25) {
-                    // 眼睛
+                    // 眼睛（更友好的表情）
                     HStack(spacing: 35) {
-                        Circle()
-                            .stroke(lineWidth: 3)
-                            .frame(width: 25, height: 25)
-                        Circle()
-                            .stroke(lineWidth: 3)
-                            .frame(width: 25, height: 25)
+                        // 左眼
+                        ZStack {
+                            Capsule()
+                                .fill(Color.accentColor.opacity(0.2))
+                                .frame(width: 30, height: 20)
+                            Capsule()
+                                .fill(Color.accentColor)
+                                .frame(width: 12, height: 12)
+                        }
+                        
+                        // 右眼
+                        ZStack {
+                            Capsule()
+                                .fill(Color.accentColor.opacity(0.2))
+                                .frame(width: 30, height: 20)
+                            Capsule()
+                                .fill(Color.accentColor)
+                                .frame(width: 12, height: 12)
+                        }
                     }
                     
                     // 嘴巴（播报时变化）
@@ -62,38 +72,32 @@ struct RobotView: View {
                         if isPlaying {
                             // 播报时显示动态嘴型
                             VStack(spacing: mouthOffset) {
-                                Rectangle()
+                                Capsule()
                                     .frame(width: 50, height: 3)
-                                Rectangle()
+                                Capsule()
                                     .frame(width: 50, height: 3)
                             }
                             .frame(height: 20)
-                            .onAppear {
-                                withAnimation(.easeInOut(duration: 0.3).repeatForever()) {
-                                    mouthOffset = 8
-                                }
-                                withAnimation(.easeInOut(duration: 2).repeatForever()) {
-                                    headRotation = 2
-                                }
-                            }
                         } else {
-                            // 静止时显示直线
-                            Rectangle()
-                                .frame(width: 50, height: 3)
+                            // 静止时显示微笑（友好的向上弧形）
+                            Path { path in
+                                path.move(to: CGPoint(x: 0, y: 15))
+                                path.addQuadCurve(
+                                    to: CGPoint(x: 50, y: 15),
+                                    control: CGPoint(x: 25, y: -10) // 控制点更高，创造明显的上扬弧度
+                                )
+                            }
+                            .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                            .frame(width: 50, height: 30)
                         }
                     }
-                    .frame(height: 20)
+                    .frame(height: 30)
                 }
                 .rotationEffect(.degrees(headRotation))
             }
+            .offset(y: -3)
         }
-        .onAppear {
-            if isPlaying {
-                withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: false)) {
-                    waveScale = 2.0
-                }
-            }
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .onChange(of: isPlaying) { newValue in
             if newValue {
                 withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: false)) {
@@ -122,12 +126,10 @@ struct NewsListView: View {
     @State private var currentIndex = 0
     
     var body: some View {
-        VStack {
-            Spacer()
-            
+        VStack(spacing: 20) {
             // 机器人形象
             RobotView(isPlaying: speechViewModel.state.isPlaying)
-                .padding(.bottom, 40)
+                .frame(height: 300)
             
             if viewModel.isLoading {
                 ProgressView()
@@ -138,7 +140,8 @@ struct NewsListView: View {
             } else if !viewModel.news.isEmpty {
                 // 当前新闻标题
                 Text(viewModel.news[currentIndex].title)
-                    .font(.title2)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(Color.blue)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
@@ -173,6 +176,7 @@ struct NewsListView: View {
                     .disabled(currentIndex >= viewModel.news.count - 1)
                 }
                 .padding(.bottom, 50)
+                
             } else {
                 Text("暂无新闻")
                     .foregroundColor(.secondary)
@@ -182,16 +186,13 @@ struct NewsListView: View {
         .task {
             await viewModel.fetchNews()
         }
-        .onReceive(speechViewModel.$state) { state in
-            // 监听播放状态，当一条新闻播放完成时自动播放下一条
-            if case .finished = state {
+        .task {
+            // 监听播放完成事件
+            for await _ in speechViewModel.playbackFinished {
                 if currentIndex < viewModel.news.count - 1 {
-                    Task {
-                        currentIndex += 1
-                        let nextNews = viewModel.news[currentIndex]
-                        await speechViewModel.updateText("\(nextNews.title)。\(nextNews.content)")
-                        await speechViewModel.play()
-                    }
+                    currentIndex += 1
+                    let nextNews = viewModel.news[currentIndex]
+                    await speechViewModel.play("\(nextNews.title)。\(nextNews.content)")
                 }
             }
         }
@@ -201,12 +202,10 @@ struct NewsListView: View {
     private func togglePlayback() {
         Task {
             if speechViewModel.state.isPlaying {
-                await speechViewModel.pause()
-            } else {
                 await speechViewModel.stop()
+            } else {
                 let currentNews = viewModel.news[currentIndex]
-                await speechViewModel.updateText("\(currentNews.title)。\(currentNews.content)")
-                await speechViewModel.play()
+                await speechViewModel.play("\(currentNews.title)。\(currentNews.content)")
             }
         }
     }
@@ -220,8 +219,8 @@ struct NewsListView: View {
             currentIndex -= 1
             if wasPlaying {
                 let currentNews = viewModel.news[currentIndex]
-                await speechViewModel.updateText("\(currentNews.title)。\(currentNews.content)")
-                await speechViewModel.play()
+                try? await Task.sleep(nanoseconds: 500_000_000) // 等待0.5秒
+                await speechViewModel.play("\(currentNews.title)。\(currentNews.content)")
             }
         }
     }
@@ -235,8 +234,8 @@ struct NewsListView: View {
             currentIndex += 1
             if wasPlaying {
                 let currentNews = viewModel.news[currentIndex]
-                await speechViewModel.updateText("\(currentNews.title)。\(currentNews.content)")
-                await speechViewModel.play()
+                try? await Task.sleep(nanoseconds: 500_000_000) // 等待0.5秒
+                await speechViewModel.play("\(currentNews.title)。\(currentNews.content)")
             }
         }
     }
