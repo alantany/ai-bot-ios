@@ -91,7 +91,84 @@ AINewsReporter/
   - [x] 验证长文本播放
   - [x] 确保播放完整性
 
-### 8. 待完成任务
+### 8. 动画效果实现 (✅ 完成)
+
+- [x] GIF 动画集成
+  - [x] 实现 GIF 播放器组件
+  - [x] 添加播放/暂停状态动画
+  - [x] 优化状态管理和切换效果
+  - [x] 实现位置记忆功能
+  - [x] 完善自动播放逻辑
+
+#### GIF 动画实现细节
+
+1. 动画文件位置：
+   - 路径：`AINewsReporter/Resources/`
+   - 文件：
+     * `speaking_robot.gif` - 播放状态动画
+     * `sleeping_robot.gif` - 停止状态动画
+
+2. 核心组件：
+```swift
+// GIF 播放器组件
+struct GIFPlayer: UIViewRepresentable {
+    let gifName: String
+    
+    func makeUIView(context: Context) -> GIFImageView {
+        let view = GIFImageView()
+        view.loadGIF(named: gifName)
+        return view
+    }
+    
+    func updateUIView(_ uiView: GIFImageView, context: Context) {
+        uiView.loadGIF(named: gifName)
+    }
+}
+```
+
+3. 状态管理：
+   - 使用 `SpeechViewModel` 管理播放状态
+   - 通过 `isPlaying` 控制动画切换
+   - 实现位置记忆功能，支持继续播放
+
+4. 主要功能：
+   - 播放/暂停状态自动切换动画
+   - 支持立即停止播放
+   - 记住上次播放位置
+   - 自动连续播放多条新闻
+
+5. 关键代码示例：
+```swift
+// 动画状态切换
+GIFPlayer(gifName: speechViewModel.state.isPlaying ? "speaking_robot" : "sleeping_robot")
+    .frame(height: 300)
+
+// 播放控制
+func togglePlayback() {
+    Task {
+        if speechViewModel.state.isPlaying {
+            await speechViewModel.stop()
+        } else {
+            speechViewModel.updateLastPlayedIndex(currentIndex)
+            let currentNews = viewModel.news[currentIndex]
+            await speechViewModel.play("\(currentNews.title)。\(currentNews.content)")
+        }
+    }
+}
+
+// 位置记忆
+speechViewModel.updateLastPlayedIndex(currentIndex)
+if let lastIndex = speechViewModel.getLastPlayedIndex() {
+    currentIndex = min(lastIndex, viewModel.news.count - 1)
+}
+```
+
+6. 注意事项：
+   - GIF 文件需要放在正确的资源目录
+   - 动画切换时机要和语音播放同步
+   - 状态变化要即时反映在界面上
+
+### 9. 待完成任务
 
 - [ ] 单元测试迁移
 - [ ] CI/CD 配置

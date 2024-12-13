@@ -8,7 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		67F835322D0BC2FF0024E5E2 /* MicrosoftCognitiveServicesSpeech.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67F835312D0BC2FF0024E5E2 /* MicrosoftCognitiveServicesSpeech.xcframework */; };
+		67F835482D0C235F0024E5E2 /* MicrosoftCognitiveServicesSpeech.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 67F835312D0BC2FF0024E5E2 /* MicrosoftCognitiveServicesSpeech.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		67F835472D0C23330024E5E2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				67F835482D0C235F0024E5E2 /* MicrosoftCognitiveServicesSpeech.xcframework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		67E8CF262D093F120049CC07 /* AINewsReporter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AINewsReporter.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -62,6 +76,7 @@
 				67E8CF222D093F120049CC07 /* Sources */,
 				67E8CF232D093F120049CC07 /* Frameworks */,
 				67E8CF242D093F120049CC07 /* Resources */,
+				67F835472D0C23330024E5E2 /* CopyFiles */,
 			);
 			buildRules = (
 			);

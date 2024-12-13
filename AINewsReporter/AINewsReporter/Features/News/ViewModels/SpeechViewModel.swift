@@ -3,12 +3,12 @@ import AVFoundation
 import MicrosoftCognitiveServicesSpeech
 
 @MainActor
-final class SpeechViewModel: NSObject, ViewModelProtocol {
+final class SpeechViewModel: NSObject, ViewModelProtocol, ObservableObject {
     // MARK: - State
     struct State {
-        var isPlaying = false
         var isTransitioning = false
-        var autoPlayEnabled = true  // 默认开启自动播放
+        var autoPlayEnabled = true
+        var lastPlayedIndex: Int?  // 添加最后播放位置的记录
     }
     
     // MARK: - Singleton
@@ -18,11 +18,13 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
     @Published private(set) var state = State()
     @Published var isLoading = false
     @Published var error: Error?
+    @Published var isPlaying = false
     
     // Azure Speech 配置
     private let speechConfig: SPXSpeechConfiguration?
     private var synthesizer: SPXSpeechSynthesizer?
     private var currentTask: Task<Void, Never>?
+    private var shouldStopPlaying = false
     
     // MARK: - Public Properties
     var playbackFinished: AsyncStream<Void> {
@@ -53,8 +55,11 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
                 print("语音合成完成")
                 Task { @MainActor in
                     self?.synthesisCompleted = true
-                    self?.state.isPlaying = false
                     self?.isLoading = false
+                    // 只有在手动停止时才设置 isPlaying = false
+                    if self?.shouldStopPlaying == true {
+                        self?.isPlaying = false
+                    }
                     self?.playbackFinishedContinuation?.yield()
                 }
             }
@@ -63,7 +68,7 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
                 print("语音合成取消：\(String(describing: eventArgs))")
                 Task { @MainActor in
                     self?.synthesisCompleted = true
-                    self?.state.isPlaying = false
+                    self?.isPlaying = false
                     self?.isLoading = false
                 }
             }
@@ -139,6 +144,7 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
         }
         
         // 确保之前的播放已经停止
+        shouldStopPlaying = false
         await stop()
         
         // 打印日志时解码 Unicode 转义序列
@@ -156,7 +162,8 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
                 throw NSError(domain: "SpeechViewModel", code: -1, userInfo: [NSLocalizedDescriptionKey: "语音合成器未初始化"])
             }
             
-            state.isPlaying = true
+            print("设置播放状态为 true")
+            isPlaying = true
             isLoading = true
             synthesisCompleted = false
             
@@ -175,6 +182,9 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
                     
                     if Task.isCancelled {
                         print("任务被取消")
+                        await MainActor.run {
+                            isPlaying = false
+                        }
                         return
                     }
                     
@@ -182,7 +192,8 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
                     if !Task.isCancelled {
                         await MainActor.run {
                             self.error = error
-                            state.isPlaying = false
+                            print("设置播放状态为 false（错误）")
+                            isPlaying = false
                             isLoading = false
                             print("播放出错：\(error.localizedDescription)")
                         }
@@ -194,7 +205,8 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
             
         } catch {
             self.error = error
-            state.isPlaying = false
+            print("设置播放状态为 false（初始化错误）")
+            isPlaying = false
             isLoading = false
             print("初始化出错：\(error.localizedDescription)")
         }
@@ -208,14 +220,33 @@ final class SpeechViewModel: NSObject, ViewModelProtocol {
             state.isTransitioning = false
         }
         
+        print("开始停止播放")
+        shouldStopPlaying = true
+        
         // 取消当前任务
         currentTask?.cancel()
         currentTask = nil
         
-        state.isPlaying = false
+        // 立即更新状态
+        isPlaying = false
         synthesisCompleted = true
+        
+        // 停止语音合成
         try? synthesizer?.stopSpeaking()
-        try? await Task.sleep(nanoseconds: 200_000_000) // 等待0.2秒确保停止完成
+        
+        // 等待一小段时间确保完全停止
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        print("播放已停止")
+    }
+    
+    // 记录最后播放的位置
+    func updateLastPlayedIndex(_ index: Int) {
+        state.lastPlayedIndex = index
+    }
+    
+    // 获取上次播放位置
+    func getLastPlayedIndex() -> Int? {
+        return state.lastPlayedIndex
     }
 }
 
