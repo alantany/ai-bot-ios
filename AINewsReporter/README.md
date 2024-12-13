@@ -7,7 +7,7 @@
 - 使用 SwiftUI 和 MVVM 架构
 - 支持新闻列表展示、新闻详情查看
 - 集成 AI 生成的新闻摘要
-- 提供新闻语音播报功能
+- 提供新闻语音播报功能（使用 Azure 语音服务）
 - 遵循 SwiftLint 代码规范
 - 采用模块化设计，便于维护和扩展
 
@@ -66,7 +66,7 @@ AINewsReporter/
   - [x] 缓存清理策略
   - [x] 错误处理
 
-### 6. 新闻功能模块迁移 (🚧 进行中)
+### 6. 新闻功能模块迁移 (✅ 完成)
 
 - [x] 模型层
   - [x] News: 新闻数据模型
@@ -76,15 +76,30 @@ AINewsReporter/
   - [x] NewsListViewModel: 新闻列表（加载、刷新、分页、搜索、分类）
   - [x] NewsDetailViewModel: 新闻详情（AI摘要、语音播报、收藏）
   - [x] SpeechViewModel: 语音播报（播放控制、进度管理、缓存）
-- [ ] 视图层
-  - [ ] NewsListView
-  - [ ] NewsDetailView
-  - [ ] NewsCardView
+- [x] 视图层
+  - [x] NewsListView: 新闻列表和播放控制界面
+  - [x] RobotView: 机器人动画界面
 
-### 7. 待完成任务
+### 7. 语音服务升级 (✅ 完成)
+
+- [x] 集成 Azure 语音服务
+  - [x] 配置服务凭证
+  - [x] 实现语音合成
+  - [x] 添加事件监听
+  - [x] 优化状态管理
+  - [x] 添加详细日志
+  - [x] 验证长文本播放
+  - [x] 确保播放完整性
+
+### 8. 待完成任务
 
 - [ ] 单元测试迁移
 - [ ] CI/CD 配置
+- [ ] 新闻分类功能
+- [ ] 自定义语音设置
+- [ ] 新闻搜索功能
+- [ ] 收藏新闻功能
+- [ ] 历史记录功能
 
 ## 开发环境
 
@@ -96,8 +111,10 @@ AINewsReporter/
 
 1. 克隆项目
 2. 打开 AINewsReporter.xcodeproj
-3. 选择目标设备或模拟器
-4. 点击运行按钮或按 Cmd+R
+3. 配置 Azure 语音服务凭证
+   - 在 SpeechViewModel 中设置 subscription key 和 region
+4. 选择目标设备或模拟器
+5. 点击运行按钮或按 Cmd+R
 
 ## 代码规范
 
