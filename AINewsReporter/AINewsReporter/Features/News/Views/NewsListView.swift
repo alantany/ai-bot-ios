@@ -83,86 +83,100 @@ struct NewsListView: View {
     
     var body: some View {
         VStack(spacing: 20) {
+            // 顶部留白
+            Spacer()
+                .frame(height: 20)
+            
             // 动画机器人
-            GIFPlayer(gifName: speechViewModel.isPlaying ? "speaking_robot" : "sleeping_robot")
-                .frame(height: 300)
+            if speechViewModel.isPlaying {
+                GIFPlayer(gifName: "speaking_robot")
+                    .frame(height: 300)
+                    .padding(.bottom, 20)  // 增加底部间距
+            } else {
+                GIFPlayer(gifName: "sleeping_robot")
+                    .frame(height: 300)
+                    .padding(.bottom, 20)  // 增加底部间距
+            }
             
             if viewModel.isLoading {
                 ProgressView()
                     .scaleEffect(1.5)
             } else if let error = viewModel.error {
                 Text("加载失败：\(error.localizedDescription)")
+                    .font(.system(size: 17))
                     .foregroundColor(.red)
+                    .padding(.horizontal, 20)
             } else if !viewModel.news.isEmpty {
-                // 当前新闻标题
-                Text(viewModel.news[currentIndex].title)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(Color.blue)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                VStack(spacing: 16) {
+                    // 当前新闻标题
+                    Text(viewModel.news[currentIndex].title)
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.2, green: 0.2, blue: 0.8))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .padding(.horizontal, 24)
+                        .shadow(color: .gray.opacity(0.2), radius: 1, x: 0, y: 1)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
                 
                 Spacer()
                 
-                // 播放/暂停按钮
-                Button(action: {
-                    print("点击按钮，当前状态: \(speechViewModel.isPlaying ? "正在播放" : "已停止")")
-                    togglePlayback()
-                }) {
-                    Image(systemName: speechViewModel.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .resizable()
-                        .frame(width: 100, height: 100)
-                        .foregroundStyle(.blue)
-                        .shadow(radius: 5)
+                // 播放控制按钮
+                HStack(spacing: 50) {
+                    // 播放按钮
+                    Button {
+                        let currentNews = viewModel.news[currentIndex]
+                        speechViewModel.updateLastPlayedIndex(currentIndex)
+                        speechViewModel.play("\(currentNews.title)。\(currentNews.content)")
+                    } label: {
+                        Image(systemName: "play.circle.fill")
+                            .resizable()
+                            .frame(width: 70, height: 70)
+                            .foregroundStyle(Color(red: 0.2, green: 0.5, blue: 1.0))
+                            .shadow(color: .gray.opacity(0.3), radius: 3)
+                    }
+                    .opacity(speechViewModel.isPlaying ? 0.4 : 1)
+                    .disabled(speechViewModel.isPlaying)
+                    
+                    // 停止按钮
+                    Button {
+                        speechViewModel.stop()
+                    } label: {
+                        Image(systemName: "stop.circle.fill")
+                            .resizable()
+                            .frame(width: 70, height: 70)
+                            .foregroundStyle(Color(red: 0.9, green: 0.3, blue: 0.3))
+                            .shadow(color: .gray.opacity(0.3), radius: 3)
+                    }
+                    .opacity(speechViewModel.isPlaying ? 1 : 0.4)
+                    .disabled(!speechViewModel.isPlaying)
                 }
-                .padding(.bottom, 50)
+                .padding(.bottom, 60)
             } else {
                 Text("暂无新闻")
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 17))
+                    .foregroundColor(Color(white: 0.5))
             }
         }
         .padding()
+        .background(Color.white)  // 改回纯白色背景
+        .ignoresSafeArea()
         .task {
+            // 设置播放下一条的回调
+            speechViewModel.playNext = {
+                if currentIndex < viewModel.news.count - 1 {
+                    currentIndex += 1
+                    let nextNews = viewModel.news[currentIndex]
+                    speechViewModel.updateLastPlayedIndex(currentIndex)
+                    speechViewModel.play("\(nextNews.title)。\(nextNews.content)")
+                }
+            }
+            
             await viewModel.fetchNews()
             // 恢复上次播放位置
-            if let lastIndex = speechViewModel.getLastPlayedIndex() {
+            if let lastIndex = speechViewModel.lastPlayedIndex {
                 currentIndex = min(lastIndex, viewModel.news.count - 1)
-            }
-        }
-        .onChange(of: speechViewModel.isPlaying) { newValue in
-            print("播放状态变化: \(newValue ? "正在播放" : "已停止")")
-        }
-    }
-    
-    // 播放控制
-    private func togglePlayback() {
-        Task {
-            if speechViewModel.isPlaying {
-                print("准备停止播放")
-                await speechViewModel.stop()
-            } else {
-                print("准备开始播放")
-                await MainActor.run {
-                    speechViewModel.isPlaying = true
-                    print("设置播放状态为 true")
-                }
-                
-                // 记录开始播放的位置
-                speechViewModel.updateLastPlayedIndex(currentIndex)
-                let currentNews = viewModel.news[currentIndex]
-                print("========== 开始播放新闻 ==========")
-                await speechViewModel.play("\(currentNews.title)。\(currentNews.content)")
-                
-                // 如果播放完成且仍在播放状态，自动播放下一条
-                if currentIndex < viewModel.news.count - 1 && speechViewModel.isPlaying {
-                    currentIndex += 1
-                    speechViewModel.updateLastPlayedIndex(currentIndex)
-                    let nextNews = viewModel.news[currentIndex]
-                    print("开始播放下一条新闻")
-                    try? await Task.sleep(nanoseconds: 500_000_000) // 等待0.5秒
-                    if speechViewModel.isPlaying {  // 再次检查是否仍在播放状态
-                        await speechViewModel.play("\(nextNews.title)。\(nextNews.content)")
-                    }
-                }
             }
         }
     }
