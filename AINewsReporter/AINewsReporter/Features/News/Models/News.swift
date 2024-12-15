@@ -1,6 +1,6 @@
 import Foundation
 
-struct News: Identifiable {
+struct News: Identifiable, Equatable {
     let id: String
     let title: String
     let content: String
@@ -33,5 +33,10 @@ struct News: Identifiable {
         self.title = title
         self.content = content
         self.publishedAt = publishedAt
+    }
+    
+    // 实现 Equatable
+    static func == (lhs: News, rhs: News) -> Bool {
+        return lhs.id == rhs.id
     }
 } 
