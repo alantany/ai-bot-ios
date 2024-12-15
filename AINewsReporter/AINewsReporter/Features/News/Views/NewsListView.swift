@@ -111,13 +111,19 @@ struct NewsListView: View {
                     // 当前新闻标题
                     Text(viewModel.news[currentIndex].title)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(red: 0.2, green: 0.2, blue: 0.8))
+                        .foregroundStyle(Color(red: 0.1, green: 0.1, blue: 0.1))  // 更深的文字颜色
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
                         .padding(.horizontal, 24)
-                        .shadow(color: .gray.opacity(0.2), radius: 1, x: 0, y: 1)
+                        .padding(.vertical, 20)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(red: 0.95, green: 0.95, blue: 1.0))  // 非常淡的蓝色背景
+                                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                        )
+                        .padding(.horizontal, 16)
                 }
-                .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 
                 Spacer()
