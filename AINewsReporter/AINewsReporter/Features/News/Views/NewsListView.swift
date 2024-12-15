@@ -111,8 +111,17 @@ struct NewsListView: View {
                         .tech
                     ], id: \.self) { category in
                         Button(action: {
-                            viewModel.switchCategory(category)
-                            currentIndex = 0  // 重置当前新闻索引
+                            // 切换分类前保存当前位置
+                            viewModel.updateCategoryLastIndex(currentIndex)
+                            Task {
+                                await viewModel.switchCategory(category)
+                                // 切换分类后恢复该分类的上次播放位置
+                                if let lastIndex = viewModel.getCategoryLastIndex() {
+                                    currentIndex = min(lastIndex, viewModel.news.count - 1)
+                                } else {
+                                    currentIndex = 0
+                                }
+                            }
                         }) {
                             Text(category.title)
                                 .font(.system(size: 17, weight: .medium))
@@ -177,6 +186,7 @@ struct NewsListView: View {
                         Button {
                             let currentNews = viewModel.news[currentIndex]
                             speechViewModel.updateLastPlayedIndex(currentIndex)
+                            viewModel.updateCategoryLastIndex(currentIndex)  // 记录当前分类的播放位置
                             speechViewModel.play("\(currentNews.title)。\(currentNews.content)")
                         } label: {
                             Image(systemName: "play.circle.fill")
@@ -187,11 +197,16 @@ struct NewsListView: View {
                         }
                         .opacity(speechViewModel.isPlaying ? 0.4 : 1)
                         .disabled(speechViewModel.isPlaying)
-                        .buttonStyle(ScaleButtonStyle())  // 添加按钮缩放动画
+                        .buttonStyle(ScaleButtonStyle())
                         
                         // 停止按钮
                         Button {
+                            // 标记当前新闻为已播放
+                            let currentNews = viewModel.news[currentIndex]
                             speechViewModel.stop()
+                            Task {
+                                await viewModel.markNewsAsPlayed(currentNews.id)
+                            }
                         } label: {
                             Image(systemName: "stop.circle.fill")
                                 .resizable()
@@ -201,7 +216,7 @@ struct NewsListView: View {
                         }
                         .opacity(speechViewModel.isPlaying ? 1 : 0.4)
                         .disabled(!speechViewModel.isPlaying)
-                        .buttonStyle(ScaleButtonStyle())  // 添加按钮缩放动画
+                        .buttonStyle(ScaleButtonStyle())
                     }
                     .padding(.bottom, 60)
                 } else {
@@ -220,20 +235,35 @@ struct NewsListView: View {
         .ignoresSafeArea()
         .task {
             // 设置播放下一条的回调
-            speechViewModel.playNext = {
-                if currentIndex < viewModel.news.count - 1 {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        currentIndex += 1
+            speechViewModel.playNext = { [weak viewModel] in
+                guard let viewModel = viewModel else { return }
+                
+                // 标记当前新闻为已播放
+                let currentNews = viewModel.news[currentIndex]
+                
+                // 使用 Task 包装异步操作
+                Task { @MainActor in
+                    await viewModel.markNewsAsPlayed(currentNews.id)
+                    viewModel.updateCategoryLastIndex(currentIndex)  // 更新当前分类的播放位置
+                    
+                    if currentIndex < viewModel.news.count - 1 {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            currentIndex += 1
+                        }
+                        let nextNews = viewModel.news[currentIndex]
+                        viewModel.updateCategoryLastIndex(currentIndex)  // 更新播放位置
+                        speechViewModel.updateLastPlayedIndex(currentIndex)
+                        speechViewModel.play("\(nextNews.title)。\(nextNews.content)")
+                    } else {
+                        // 已经是最后一条新闻，检查是否需要刷新
+                        await viewModel.checkAndRefreshIfNeeded()
                     }
-                    let nextNews = viewModel.news[currentIndex]
-                    speechViewModel.updateLastPlayedIndex(currentIndex)
-                    speechViewModel.play("\(nextNews.title)。\(nextNews.content)")
                 }
             }
             
-            await viewModel.preloadAllNews()  // 使用新的预加载方法
-            // 恢复上次播放位置
-            if let lastIndex = speechViewModel.lastPlayedIndex {
+            await viewModel.preloadAllNews()
+            // 恢复当前分类的上次播放位置
+            if let lastIndex = viewModel.getCategoryLastIndex() {
                 currentIndex = min(lastIndex, viewModel.news.count - 1)
             }
         }
